@@ -37,6 +37,7 @@ _CONTENT_TOOLS = ("view", "grep", "glob")
 # names pass through unchanged.
 _TOOL_CANON = {
     "bash": "bash", "shell": "bash",
+    "mcp__remote-devices__device_bash": "bash",
     "read": "view", "view": "view",
     "grep": "grep",
     "glob": "glob",
