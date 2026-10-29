@@ -68,6 +68,10 @@ def response_text(resp, cap=RESULT_CAP):
         return " ".join(x.get("text", "") if isinstance(x, dict) else str(x)
                         for x in resp)[:cap]
     if isinstance(resp, dict):
+        # Claude Code's Edit/Write result is the file and its patch, not an outcome (a failed
+        # edit arrives as PostToolUseFailure); a file that mentions an error is no failure.
+        if "structuredPatch" in resp:
+            return ""
         parts = []
         for k in _RESPONSE_KEYS:
             v = resp.get(k)

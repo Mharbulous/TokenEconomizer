@@ -1374,6 +1374,39 @@ def test_claude_code_failure_payloads_parse_with_their_exit_code():
     assert code is None
 
 
+# Claude Code 2.1's Edit and Write `tool_response` carries the file itself (`originalFile`, the
+# patch, and Write's `content`), not an outcome; a failed edit arrives as PostToolUseFailure. Read
+# as the result, a document that mentions an error made each successful edit an error output,
+# which woke the judge on ordinary doc-editing turns.
+_DOC = "# Spec\nIf the parser hits a ValueError, assert the input and raise an Exception.\n"
+CLAUDE_EDIT = {"hook_event_name": "PostToolUse", "tool_name": "Edit",
+               "tool_input": {"file_path": "/r/spec.md", "old_string": "raise",
+                              "new_string": "log"},
+               "tool_response": {"filePath": "/r/spec.md", "oldString": "raise",
+                                 "newString": "log", "originalFile": _DOC,
+                                 "structuredPatch": [{"oldStart": 1, "oldLines": 2,
+                                                      "newStart": 1, "newLines": 2,
+                                                      "lines": [" # Spec", "-" + _DOC[7:-1],
+                                                                "+" + _DOC[7:-1]]}],
+                                 "userModified": False, "replaceAll": False}}
+CLAUDE_WRITE = {"hook_event_name": "PostToolUse", "tool_name": "Write",
+                "tool_input": {"file_path": "/r/spec.md", "content": _DOC},
+                "tool_response": {"type": "create", "filePath": "/r/spec.md", "content": _DOC,
+                                  "structuredPatch": [], "originalFile": None,
+                                  "userModified": False}}
+
+
+def test_a_successful_claude_edit_of_a_file_that_mentions_errors_is_not_an_error_output():
+    from tokeneconomizer.loopguard.state import SpiralState
+    from tokeneconomizer.plugin.hosts import HOSTS
+    st = SpiralState()
+    for p in (CLAUDE_EDIT, CLAUDE_WRITE):
+        name, args, text, code = HOSTS["claude"]().tool_call(p)
+        st.update(name, args, text, failed=None if code is None else code != 0)
+    assert st.error_outputs == 0
+    assert not any("err#" in r for r in st.recent)
+
+
 def test_the_claude_hook_file_registers_failed_calls():
     hooks = json.load(open(os.path.join(os.path.dirname(os.path.dirname(
         os.path.abspath(__file__))), "plugin", "hooks", "hooks.json")))["hooks"]
