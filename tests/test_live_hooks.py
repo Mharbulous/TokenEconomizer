@@ -155,7 +155,29 @@ def test_micro_skills_is_off_by_default_and_learns_nothing(env, repo, tmp_path, 
     for k, v in default.items():
         monkeypatch.setenv(k, v)
     assert cli.main(["--host", "claude", "--cwd", repo, "microskills"]) == 0
-    assert "`config set microskills=on` turns it on" in capsys.readouterr().out
+    assert "`/tokeneconomizer:microskills on` turns it on" in capsys.readouterr().out
+
+
+def test_micro_skills_on_and_off_from_its_own_command_and_status_says_which(
+        env, repo, monkeypatch, capsys):
+    """Off says it is the default and names the command that turns it on; `on` and `off` set it."""
+    from tokeneconomizer.plugin import cli
+    for k, v in env.items():
+        monkeypatch.setenv(k, v)
+    monkeypatch.delenv("TE_MICROSKILLS", raising=False)
+    te = ["--host", "claude", "--cwd", repo]
+    off = "off (the default); `/tokeneconomizer:microskills on`"
+    assert cli.main(te + ["status"]) == 0
+    assert off in capsys.readouterr().out
+    assert cli.main(te + ["microskills", "on"]) == 0
+    assert "charged to the session's cost" in capsys.readouterr().out
+    assert cli.main(te + ["status"]) == 0
+    out = capsys.readouterr().out
+    assert "microskills=envfacts+distiller" in out and off not in out
+    assert cli.main(te + ["microskills", "off"]) == 0
+    capsys.readouterr()
+    assert cli.main(te + ["status"]) == 0
+    assert off in capsys.readouterr().out
 
 
 def test_micro_skills_on_runs_the_proposer_without_paid_and_charges_it(
