@@ -151,7 +151,7 @@ ENVELOPE_HISTORY = 500      # recent ended-green turns kept for the percentile
 # Overrides that shape the envelope itself, passed to the tracker; the rest are pinned over the
 # thresholds it returns.
 _ENVELOPE_KEYS = {"envelope_margin": "margin", "envelope_pct": "pct",
-                  "envelope_min_samples": "min_samples"}
+                  "envelope_min_samples": "min_samples", "envelope_frozen": "frozen_envelope"}
 
 
 def load_envelope(store, level="default", overrides=None):

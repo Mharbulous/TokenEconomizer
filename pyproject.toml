@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tokeneconomizer"
-version = "0.1.0"
+version = "0.1.1"
 description = "Experience-driven black-box cost control for coding agents (Claude Code, Codex, Copilot CLI, Pi), as a plugin."
 readme = "README.md"
 requires-python = ">=3.10"

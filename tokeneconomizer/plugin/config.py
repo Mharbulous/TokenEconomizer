@@ -108,8 +108,8 @@ OBSOLETE = {
 }
 
 # The loop guard's thresholds a person may pin (`loopguard.<name>=<value>`), with their type
-# and range. They are the keys of `loopguard.DEFAULT_THRESHOLDS`; a turn's "turns" are its tool
-# calls here.
+# and range. They are the keys of `loopguard.DEFAULT_THRESHOLDS`, plus `envelope_frozen`, an
+# envelope to act on before a repository has learned one; a turn's "turns" are its tool calls here.
 LOOPGUARD_KEYS = {
     "min_turns": (int, 1, None, "tool calls in a turn before it can count as stuck"),
     "edit_churn": (int, 1, None, "edits to one file that count as churn"),
@@ -119,6 +119,7 @@ LOOPGUARD_KEYS = {
     "envelope_pct": (float, 1.0, 100.0, "percentile of this repository's ended-green turns"),
     "envelope_margin": (float, 0.1, None, "multiplier on that percentile: the envelope"),
     "envelope_min_samples": (int, 1, None, "ended-green turns needed before the envelope is used"),
+    "envelope_frozen": (float, 1.0, None, "envelope used until this repository has learned its own"),
     "backstop_mult": (float, 0.1, None, "stuck past this multiple of the envelope: redirect "
                                         "without the judge"),
     "judge_confidence": (float, 0.0, 1.0, "the judge's confidence needed to redirect"),
