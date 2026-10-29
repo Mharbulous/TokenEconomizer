@@ -517,6 +517,23 @@ the judge's gate opens in 18.1%, 15.8% and 5.8% of them.
 The plugin's proposer prompt lists each fact it holds with its claim, so a fact it has is not
 authored again under a new id; the experiments' prompt names the ids alone, as the paper ran it.
 
+**Claude Cowork, 2026-10-29** (Probanda's `tokeneconomizer` 0.2.0, built from this fork at
+`44538301` or `2f305dea`, which differ only in micro-skill messages, installed from claude.ai's marketplace into a new Cowork session; its hook commands set
+`TE_LOOPGUARD_THRESHOLDS='{"envelope_frozen":38}' TE_TOOLPRUNE=off`, and Cowork has no
+`config.json`, so shadow is off). The hooks wrote `/root/.tokeneconomizer` at session start, with
+`bin/te` executable; `doctor` and `status` exited 0 (Python 3.13.18, state root writable, no
+`errors.log`). `canon_tool` mapped `Bash`, `Read`, `Edit`, `Write` and the PC shell
+`mcp__remote-devices__device_bash` to `bash`, `view`, `edit`, `create` and `bash`, and a PC-shell
+`echo` reached the session's action log. A side call answered `OK` at 8,231 effective tokens.
+`te status --json` reports `loopguard.envelope` null from the shell, which never sees the hook
+command's setting, and 38 with it. A turn told to make 20 edit-and-run pairs against a script that
+always fails the same way: the judge found it stuck (0.85), and its redirect -- naming the ten edits
+to one file and the one error signature, and asking for the error and the script to be read first
+-- reached the model as `additionalContext` after tool call 22, where it stopped. The event log's
+`nudge` carries `envelope` 38.0 and `shadow` false. The ledger's overhead for the session was 20,757
+effective tokens. Its `nudges` stayed 0: a session's nudge count reaches the ledger only when the
+session is folded, and a Cowork session is never folded, because its container is gone by then.
+
 ## 4. State and privacy
 
 All state is local, under `$TOKENECONOMIZER_HOME` (default `~/.tokeneconomizer`), one directory
