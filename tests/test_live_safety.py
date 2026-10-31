@@ -90,6 +90,17 @@ def test_a_loose_state_root_is_made_private_and_the_launcher_is_owner_only(tmp_p
     assert _mode(ensure_launcher(env)) == 0o700
 
 
+def test_the_launcher_runs_the_command_line(repo, tmp_path):
+    """`bin/te` runs under the POSIX shell on every host, Git Bash on Windows included, where a
+    backslash path leaves `scripts/te` unable to find its own folder."""
+    env = dict(os.environ, TOKENECONOMIZER_HOME=str(tmp_path / "home"), TE_PLUGIN_ROOT=PLUGIN,
+               TE_PYTHON=sys.executable)
+    launcher = ensure_launcher(env)
+    p = subprocess.run(["sh", launcher, "--cwd", repo, "config", "set", "spiral=off"], env=env,
+                       capture_output=True, text=True)
+    assert p.returncode == 0, p.stderr
+
+
 def test_the_command_line_creates_its_state_private(repo, tmp_path):
     env = dict(os.environ, TOKENECONOMIZER_HOME=str(tmp_path / "home"))
     subprocess.run(["sh", os.path.join(PLUGIN, "scripts", "te"), "--cwd", repo, "config", "set",
