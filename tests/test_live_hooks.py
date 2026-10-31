@@ -833,6 +833,23 @@ def test_each_session_is_folded_once_and_priced(env, repo, tmp_path):
         "optimizer_tokens", "spiral_judge_tokens", "spiral_nudge_writer_tokens"}
 
 
+def test_a_claude_session_whose_hooks_name_no_transcript_is_priced_from_its_own_log(
+        env, repo, tmp_path, monkeypatch):
+    """Claude Cowork's hooks carried no `transcript_path` (2026-10-31), so the fold had no log to
+    read. Claude Code keeps every session's log at `~/.claude/projects/<folder>/<id>.jsonl`."""
+    from tokeneconomizer.plugin import history
+    monkeypatch.setattr(history, "default_dirs",
+                        lambda host_name, env=None: [str(tmp_path / "root" / ".claude")])
+    logs = tmp_path / "root" / ".claude" / "projects" / "-home-claude"
+    logs.mkdir(parents=True)
+    trap_session(str(logs / "cw.jsonl"), repo, 0)
+    base = {"session_id": "cw", "cwd": repo}
+    call(env, dict(base, hook_event_name="SessionStart", source="resume"))
+    call(env, dict(base, hook_event_name="SessionEnd", reason="other"))
+    rec, = store_for(env, repo).read_lines("ledger.jsonl")
+    assert "error" not in rec and rec["effective_tokens"] == pytest.approx(3 * 485.0)
+
+
 def test_a_fold_that_cannot_take_the_lock_skips_and_the_session_is_still_folded_once(
         env, repo, tmp_path, monkeypatch):
     """A paid fold holds the lock through its side call; a second fold of the same session that
